@@ -1,0 +1,10 @@
+
+example lat long: 45.572842029590646, -93.59433639400267
+api key: 150464c2adb8c38e5bd05c322eda9963
+
+api.openweathermap.org/data/2.5/forecast?lat=44.34&lon=10.99&appid={API key}
+
+api.openweathermap.org/data/2.5/forecast?lat=45.572842029590646&lon=-93.59433639400267&appid=150464c2adb8c38e5bd05c322eda9963
+
+
+https://api.openweathermap.org/data/2.5/weather?q=atlanta&appid=150464c2adb8c38e5bd05c322eda9963
