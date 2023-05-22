@@ -1,46 +1,65 @@
-var appid = '150464c2adb8c38e5bd05c322eda9963';
+$(document).ready(function() {
+  var appid = '150464c2adb8c38e5bd05c322eda9963';
 
-$(".search_submit").on("click", async function(e) {
-  e.preventDefault();
-  reset();
-  let city_data;
-  let forecast;
+  $(".search_submit").on("click", async function(e) {
+    e.preventDefault();
+    reset();
+    let city = $(".search_input").val();
 
-  let city = $(".search_input").val();
+    try {
+      let cityData = await fetchCity(city);
+      $("#city_name").html(city);
+      $("#temp").html(convertKelvinToFahrenheit(cityData.main.temp) + '°F');
+      $("#wind").html(cityData.wind.speed + ' MPH');
+      $("#humidity").html(cityData.main.humidity + '%');
 
-  city_data = await fetch_city(city);
+      let forecastData = await fetchForecast(cityData.coord);
+      displayForecast(forecastData);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
-  $("#city_name").html(city);
-  $("#temp").html(city_data.main.temp);
-  $("#wind").html(city_data.wind.speed);
-  $("#humidity").html(city_data.main.humidity);
+  async function fetchCity(city) {
+    let api = 'https://api.openweathermap.org/data/2.5/weather?q=' + city + '&appid=' + appid;
+    let response = await fetch(api);
+    let response_json = await response.json();
+    return response_json;
+  }
 
-  forecast = await fetch_forecast(city_data.coord);
+  async function fetchForecast(coord) {
+    let api = 'https://api.openweathermap.org/data/2.5/forecast?lat=' + coord.lat + '&lon=' + coord.lon + '&appid=' + appid;
+    let response = await fetch(api);
+    let response_json = await response.json();
+    return response_json;
+  }
 
-})
+  function displayForecast(forecastData) {
+    let forecastWrap = $("#forecast_wrap");
+    forecastWrap.empty();
 
-async function fetch_city(city) {
-  let api = 'https://api.openweathermap.org/data/2.5/weather?q=' + city + '&appid=' + appid;
+    for (let i = 0; i < 5; i++) {
+      let forecast = forecastData.list[i];
 
-  let response = await fetch(api);
-  let response_json = await response.json();
-  console.log(response_json);
+      let forecastBox = $('<div class="forecast"></div>');
+      forecastBox.append('<p><b>' + forecast.dt_txt + '</b></p>');
+      forecastBox.append('<p>Temp: ' + convertKelvinToFahrenheit(forecast.main.temp) + '°F</p>');
+      forecastBox.append('<p>Wind: ' + forecast.wind.speed + ' MPH</p>');
+      forecastBox.append('<p>Humidity: ' + forecast.main.humidity + '%</p>');
 
-  return response_json;
-}
+      forecastWrap.append(forecastBox);
+    }
+  }
 
-async function fetch_forecast(coord) {
-  let api = 'https://api.openweathermap.org/data/2.5/forecast?lat=' + coord.lat + '&lon=' + coord.lon + '&appid=' + appid;
-  let response = await fetch(api);
-  let response_json = await response.json();
-  console.log(response_json);
-  
-  return response_json;
-}
+  function convertKelvinToFahrenheit(kelvin) {
+    return Math.round(((kelvin - 273.15) * 9) / 5 + 32);
+  }
 
-function reset() {
-  $("#city_name").html('');
-  $("#temp").html('');
-  $("#wind").html('');
-  $("#humidity").html('');
-}
+  function reset() {
+    $("#city_name").html('');
+    $("#temp").html('');
+    $("#wind").html('');
+    $("#humidity").html('');
+    $("#forecast_wrap").empty();
+  }
+});
